@@ -1,8 +1,9 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException, status
 from .logger import configure_logger
-from .parser import parse_xml
-from loguru import logger
+from .db import DataBase
+from .cache import Cache
 from .tasks import process_sales_data
+from .hash import hashed_file
 
 
 configure_logger()
@@ -12,6 +13,47 @@ app = FastAPI()
 
 
 @app.post('/upload')
-async def get_xml(file: UploadFile = File(...)) -> None:
-	task_id, sales_date, products = await parse_xml(file)
-	process_sales_data.delay(task_id, sales_date, products)
+async def send_xml(file: UploadFile = File(...)) -> dict[str, str]:
+    if file.filename is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Uploaded file is not a valid XML file',
+        )
+
+    if not file.filename.endswith('.xml'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Uploaded file is not a valid XML file',
+        )
+
+    if file.content_type not in [
+        'application/xml',
+        'text/xml',
+        'application/xhtml+xml',
+    ]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Uploaded file is not a valid XML file',
+        )
+
+    file_content: bytes = await file.read()
+    hash_file = await hashed_file(file_content)
+    await process_sales_data.delay(hash_file)
+    return {'hash_file': hash_file}
+
+
+@app.get('/report')
+async def get_report(hash_file: str) -> dict[str, str] | None:
+    async with Cache() as cache:
+        result = await cache.check(hash_file)
+
+        if result is not None:
+            return {'report': result}
+
+        async with DataBase() as database:
+            result = await database.check_response(hash_file)
+
+            if result is not None:
+                return {'report': result}
+
+    HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task is not completed')
