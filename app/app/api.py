@@ -1,19 +1,15 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, status
-from .logger import configure_logger
 from .db import DataBase
 from .cache import Cache
 from .tasks import process_sales_data
 from .hash import hashed_file
 
 
-configure_logger()
-
-
 app = FastAPI()
 
 
 @app.post('/upload')
-async def send_xml(file: UploadFile = File(...)) -> dict[str, str]:
+async def send_xml(file: UploadFile = File(...)) -> dict[str, str | None]:
     if file.filename is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -38,7 +34,14 @@ async def send_xml(file: UploadFile = File(...)) -> dict[str, str]:
 
     file_content: bytes = await file.read()
     hash_file = await hashed_file(file_content)
-    await process_sales_data.delay(hash_file)
+
+    async with DataBase() as database:
+        result = await database.check_response(hash_file)
+
+        if result is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='You are trying to send a file that you sent before')
+        
+    process_sales_data.delay(file_content, hash_file)
     return {'hash_file': hash_file}
 
 
@@ -50,10 +53,10 @@ async def get_report(hash_file: str) -> dict[str, str] | None:
         if result is not None:
             return {'report': result}
 
-        async with DataBase() as database:
-            result = await database.check_response(hash_file)
+    async with DataBase() as database:
+        result = await database.check_response(hash_file)
 
-            if result is not None:
-                return {'report': result}
+        if result is not None:
+            return {'report': result}
 
-    HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task is not completed')
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task is not completed')
