@@ -2,19 +2,21 @@ from .llm import send_prompt_to_claude_api
 from fastapi import HTTPException, status
 from .parser import parse_xml
 from .db import DataBase
-from celery import Celery
+from .logger import configure_logger
+from loguru import logger
+from .celery import celery
 from .cache import Cache
-import os
+import asyncio
 
 
-celery_app = Celery('tasks', broker=os.environ.get('CELERY_BROKER_URL'))
+configure_logger()
 
 
-@celery_app.task(bind=True)
-async def process_sales_data(self, file_content: bytes, hash_file: str) -> None:
-    self.update_state(state='Get XML')
+async def async_func(task, file_content: bytes, hash_file: str):
+    logger.debug(f'Start task with params: {file_content}\n{hash_file}')
+    task.update_state(state='Get XML')
     hash_file, task_id, sales_date, products = await parse_xml(file_content, hash_file)
-    self.update_state(state='Processed XML')
+    task.update_state(state='Processed XML')
 
     total_revenue = sum(product['quantity'] * product['price'] for product in products)
 
@@ -34,11 +36,12 @@ async def process_sales_data(self, file_content: bytes, hash_file: str) -> None:
     prompt += 'Составь краткий аналитический отчет с выводами и рекомендациями.'
 
     async with DataBase() as database:
-        self.update_state(state='A report is generated')
+        task.update_state(state='A report is generated')
 
         response = await send_prompt_to_claude_api(prompt)
 
         if response is None:
+            logger.error('response is None')
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail='Server side error',
@@ -46,8 +49,15 @@ async def process_sales_data(self, file_content: bytes, hash_file: str) -> None:
 
         await database.create_record_llm_response(task_id, response)
 
-        self.update_state(state='The report has been generated')
+        task.update_state(state='The report has been generated')
 
         async with Cache() as cache:
             await cache.delete_task_id(task_id)
             await cache.set_llm_response(hash_file, response)
+        
+        logger.debug('Completed task')
+
+
+@celery.task(bind=True)
+def process_sales_data(self, file_content: bytes, hash_file: str):
+    asyncio.run(async_func(self, file_content, hash_file))
