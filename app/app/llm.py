@@ -1,5 +1,5 @@
 from langchain.schema import HumanMessage, SystemMessage
-from langchain.chat_models.gigachat import GigaChat
+from langchain_community.chat_models.gigachat import GigaChat
 from .logger import configure_logger
 from loguru import logger
 import os
@@ -9,7 +9,7 @@ configure_logger()
 
 
 chat = GigaChat(
-    credentials=os.getenv('GIGACHAT_API_KEY'), scope='GIGACHAT_API_PERS', streaming=True
+    credentials=os.getenv('GIGACHAT_API_KEY'), verify_ssl_certs=False, scope='GIGACHAT_API_PERS', streaming=True
 )
 
 
