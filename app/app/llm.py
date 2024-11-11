@@ -9,7 +9,10 @@ configure_logger()
 
 
 chat = GigaChat(
-    credentials=os.getenv('GIGACHAT_API_KEY'), verify_ssl_certs=False, scope='GIGACHAT_API_PERS', streaming=True
+    credentials=os.getenv('GIGACHAT_API_KEY'),
+    verify_ssl_certs=False,
+    scope='GIGACHAT_API_PERS',
+    streaming=True,
 )
 
 

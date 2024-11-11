@@ -54,7 +54,7 @@ async def async_func(task, file_content: bytes, hash_file: str):
         async with Cache() as cache:
             await cache.delete_task_id(task_id)
             await cache.set_llm_response(hash_file, response)
-        
+
         logger.debug('Completed task')
 
 

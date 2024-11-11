@@ -39,8 +39,11 @@ async def send_xml(file: UploadFile = File(...)) -> dict[str, str | None]:
         result = await database.check_response(hash_file)
 
         if result is not None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='You are trying to send a file that you sent before')
-        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='You are trying to send a file that you sent before',
+            )
+
     process_sales_data.delay(file_content, hash_file)
     return {'hash_file': hash_file}
 
@@ -59,4 +62,6 @@ async def get_report(hash_file: str) -> dict[str, str] | None:
         if result is not None:
             return {'report': result}
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task is not completed')
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail='Task is not completed'
+    )

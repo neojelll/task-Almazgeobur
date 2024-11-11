@@ -17,4 +17,7 @@ async def hashed_file(file_content: bytes) -> str:
         return return_value
     except Exception as e:
         logger.error(f'Error when hashed_file: {e}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Server side error')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Server side error',
+        )
