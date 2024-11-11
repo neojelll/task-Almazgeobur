@@ -1,0 +1,38 @@
+services:
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/app
+    ports:
+      - "8000:8000"
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: 'neojelll'
+      POSTGRES_PASSWORD: '123'
+      POSTGRES_DB: 'mydatabase'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initdb.d:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  celery:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    command: celery -A app worker -l INFO
+    volumes:
+      - ./app:/app
+
+volumes:
+  postgres_data:
+  redis_data:
