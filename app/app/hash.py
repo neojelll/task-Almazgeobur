@@ -1,7 +1,7 @@
 import hashlib
 from fastapi import HTTPException, status
-from .logger import configure_logger
 from loguru import logger
+from .logger import configure_logger
 
 
 configure_logger()
