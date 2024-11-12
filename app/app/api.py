@@ -1,8 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, status
-from .db import DataBase
 from .cache import Cache
-from .tasks import process_sales_data
+from .db import DataBase
 from .hash import hashed_file
+from .tasks import process_sales_data
 
 
 app = FastAPI()
