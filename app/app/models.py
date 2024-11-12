@@ -1,16 +1,16 @@
+from datetime import datetime
 from sqlalchemy import (
-    ForeignKey,
     Column,
-    Integer,
-    String,
-    Numeric,
-    DateTime,
     Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
     Text,
 )
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, relationship
-from datetime import datetime
 
 
 class Base(AsyncAttrs, DeclarativeBase):
