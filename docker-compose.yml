@@ -5,16 +5,15 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./app:/app
+      - ./app/.env:/app/.env
     ports:
       - "8000:8000"
 
   postgres:
     image: postgres:latest
     restart: always
-    environment:
-      POSTGRES_USER: 'neojelll'
-      POSTGRES_PASSWORD: '123'
-      POSTGRES_DB: 'mydatabase'
+    env_file:
+      - ./app/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./initdb.d:/docker-entrypoint-initdb.d
@@ -32,6 +31,7 @@ services:
     command: celery -A app worker -l INFO
     volumes:
       - ./app:/app
+      - ./app/.env:/app/.env
 
 volumes:
   postgres_data:
