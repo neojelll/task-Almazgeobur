@@ -1,8 +1,8 @@
+import os
+from loguru import logger
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_community.chat_models.gigachat import GigaChat
 from .logger import configure_logger
-from loguru import logger
-import os
 
 
 configure_logger()
@@ -16,7 +16,7 @@ chat = GigaChat(
 )
 
 
-async def send_prompt_to_claude_api(prompt: str):
+async def send_prompt_to_llm_api(prompt: str):
     try:
         logger.debug(f'Start response to gigachat API with params: {prompt}')
         messages = [
