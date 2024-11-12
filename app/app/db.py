@@ -1,10 +1,10 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from .models import Product, Task, LLMResponse
-from sqlalchemy import select
-from .logger import configure_logger
-from loguru import logger
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from .logger import configure_logger
+from .models import Product, Task, LLMResponse
 
 
 configure_logger()
