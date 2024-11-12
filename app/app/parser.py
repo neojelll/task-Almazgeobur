@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status
-from .logger import configure_logger
+from lxml import etree
+from loguru import logger
 from .cache import Cache
 from .db import DataBase
-from loguru import logger
-from lxml import etree
+from .logger import configure_logger
 
 
 configure_logger()
