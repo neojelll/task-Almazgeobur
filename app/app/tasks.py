@@ -14,9 +14,9 @@ configure_logger()
 
 async def async_func(task, file_content: bytes, hash_file: str):
     logger.debug(f'Start task with params: {file_content}\n{hash_file}')
-    await task.update_state(state='Get XML')
+    task.update_state(state='Get XML')
     hash_file, task_id, sales_date, products = await parse_xml(file_content, hash_file)
-    await task.update_state(state='Processed XML')
+    task.update_state(state='Processed XML')
 
     total_revenue = sum(product['quantity'] * product['price'] for product in products)
 
@@ -38,7 +38,7 @@ async def async_func(task, file_content: bytes, hash_file: str):
     )
 
     async with DataBase() as database:
-        await task.update_state(state='A report is generated')
+        task.update_state(state='A report is generated')
 
         response = await send_prompt_to_llm_api(prompt)
 
@@ -51,7 +51,7 @@ async def async_func(task, file_content: bytes, hash_file: str):
 
         await database.create_record_llm_response(task_id, response)
 
-        await task.update_state(state='The report has been generated')
+        task.update_state(state='The report has been generated')
 
     async with Cache() as cache:
         await cache.delete_task_id(task_id)
