@@ -7,10 +7,9 @@
 	git clone https://github.com/neojelll/task-Almazgeobur
 	```
 
-2. Получите Sber GigaChat token, как получить токен:
-	```
-	https://developers.sber.ru/docs/ru/gigachat/quickstart/ind-using-api
-	```
+2. Получите Sber GigaChat Authorization token, как получить токен:
+	[Get Authorization token docs](https://developers.sber.ru/docs/ru/gigachat/quickstart/ind-using-api)
+
 
 3. Создайте в директории `app` файл .env по примеру в .env.example заменив на свои значения.
 	- На MacOS:
@@ -68,4 +67,10 @@
 
 ## API документация
 	
-	http://localhost:8000/docs#/
+[API Documentation](http://localhost:8000/docs#/)
+
+## Пример сгенерированного отчета
+
+[xml файл](sales-example.xml)
+
+[Oтчет по xml файлу](report-example.md)
