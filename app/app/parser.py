@@ -29,31 +29,27 @@ async def parse_xml(file_content: bytes, hash_file_hex: str) -> tuple:
             root = etree.fromstring(file_content, parser)
 
             sales_date: str = root.attrib['date']
-            products_element = root.find('products')
 
             products: list[dict] = []
 
-            if products_element is not None:
-                for product in root.find('products').findall('product'):
-                    product_id: int = int(product.find('id').text)
-                    product_name: str = product.find('name').text
-                    product_quantity: int = int(product.find('quantity').text)
-                    product_price: float = float(product.find('price').text)
-                    product_category: str = product.find('category').text
+            for product in root.find('products').findall('product'):
+                product_id: int = int(product.find('id').text)
+                product_name: str = product.find('name').text
+                product_quantity: int = int(product.find('quantity').text)
+                product_price: float = float(product.find('price').text)
+                product_category: str = product.find('category').text
 
-                    product = {
-                        'id': product_id,
-                        'name': product_name,
-                        'quantity': product_quantity,
-                        'price': product_price,
-                        'category': product_category,
-                    }
+                product = {
+                    'id': product_id,
+                    'name': product_name,
+                    'quantity': product_quantity,
+                    'price': product_price,
+                    'category': product_category,
+                }
 
-                    await database.create_record_product(task_id, sales_date, product)
+                await database.create_record_product(task_id, sales_date, product)
 
-                    products.append(product)
-            else:
-                logger.warning('No products element found')
+                products.append(product)
 
         logger.debug('Completed parse_xml')
         return hash_file_hex, task_id, sales_date, products

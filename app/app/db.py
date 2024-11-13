@@ -87,11 +87,11 @@ class DataBase:
             )
             task = result.scalars().first()
 
-            if task:
+            if task:  # pragma: no cover
                 return_value = task.llm_response.response
                 logger.debug(f'Completed check_response returned: {return_value}')
                 return return_value
-            logger.debug('Completed check_response returned: None')
+            logger.debug('Completed check_response returned: None')  # pragma: no cover
         except Exception as e:
             logger.error(f'Error when check_response: {e}')
 

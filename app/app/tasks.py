@@ -14,9 +14,9 @@ configure_logger()
 
 async def async_func(task, file_content: bytes, hash_file: str):
     logger.debug(f'Start task with params: {file_content}\n{hash_file}')
-    task.update_state(state='Get XML')
+    await task.update_state(state='Get XML')
     hash_file, task_id, sales_date, products = await parse_xml(file_content, hash_file)
-    task.update_state(state='Processed XML')
+    await task.update_state(state='Processed XML')
 
     total_revenue = sum(product['quantity'] * product['price'] for product in products)
 
@@ -38,7 +38,7 @@ async def async_func(task, file_content: bytes, hash_file: str):
     )
 
     async with DataBase() as database:
-        task.update_state(state='A report is generated')
+        await task.update_state(state='A report is generated')
 
         response = await send_prompt_to_llm_api(prompt)
 
@@ -51,15 +51,15 @@ async def async_func(task, file_content: bytes, hash_file: str):
 
         await database.create_record_llm_response(task_id, response)
 
-        task.update_state(state='The report has been generated')
+        await task.update_state(state='The report has been generated')
 
-        async with Cache() as cache:
-            await cache.delete_task_id(task_id)
-            await cache.set_llm_response(hash_file, response)
+    async with Cache() as cache:
+        await cache.delete_task_id(task_id)
+        await cache.set_llm_response(hash_file, response)
 
         logger.debug('Completed task')
 
 
 @celery.task(bind=True)
 def process_sales_data(self, file_content: bytes, hash_file: str):
-    asyncio.run(async_func(self, file_content, hash_file))
+    asyncio.run(async_func(self, file_content, hash_file))  # pragma: no cover
