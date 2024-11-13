@@ -24,7 +24,7 @@ async def mock_cache(mocker):
 @pytest.mark.asyncio
 async def test_init_error(mocker):
     with patch.dict('os.environ', {'CACHE_HOST': 'redis', 'CACHE_PORT': '6379'}):
-        mocker.patch('app.cache.Redis', autospec=True, return_value=Exception('Error'))
+        mocker.patch('app.cache.Redis', autospec=True, side_effect=Exception('Error'))
         Cache()
 
 
