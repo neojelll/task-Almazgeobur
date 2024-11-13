@@ -8,5 +8,10 @@ __pycache__/
 dist/
 build/
 
+.coverage
+test_file.xml
+
 venv/
 .env/
+
+.env
